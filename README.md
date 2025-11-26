@@ -1,6 +1,9 @@
 # Soyio Docs Indexer
 
-GitHub Action to index documentation for semantic search with Pinecone.
+GitHub Action to index documentation for semantic search with Pinecone. Run this in your docs repo (e.g., `soyio-id/soyio-docs`) so the bot action (`soyio-id/soyio-docs-bot-action@v1`) in your code repos can query fresh embeddings.
+
+> [!NOTE]
+> Companion bot: https://github.com/soyio-id/soyio-docs-bot-action — install it in your code repos to consume the embeddings this indexer publishes.
 
 ## Usage
 
@@ -19,7 +22,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: soyio/soyio-docs-bot/indexer@indexer-v1
+      - uses: soyio-id/soyio-docs-indexer-action@v1
         with:
           pinecone_api_key: ${{ secrets.PINECONE_API_KEY }}
           pinecone_index: 'soyio-docs'
