@@ -1,0 +1,38 @@
+name: "Soyio Docs Indexer"
+description: "Index documentation for semantic search with Pinecone"
+author: "Soyio"
+
+inputs:
+  pinecone_api_key:
+    description: "Pinecone API key"
+    required: true
+  pinecone_index:
+    description: "Pinecone index name"
+    required: true
+  gemini_api_key:
+    description: "Google Gemini API key for embeddings"
+    required: true
+  docs_path:
+    description: "Path to documentation directory"
+    required: false
+    default: "."
+  chunk_size:
+    description: "Maximum chunk size in characters"
+    required: false
+    default: "1300"
+  include_patterns:
+    description: 'Glob patterns to include (comma-separated, e.g. "docs/**/*.md,guides/**/*.mdx")'
+    required: false
+    default: "**/*.{md,mdx,markdown}"
+  exclude_patterns:
+    description: 'Glob patterns to exclude (comma-separated, e.g. "**/README.md,**/AGENTS.md")'
+    required: false
+    default: ""
+
+runs:
+  using: "node20"
+  main: "dist/index.js"
+
+branding:
+  icon: "book"
+  color: "blue"

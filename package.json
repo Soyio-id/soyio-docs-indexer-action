@@ -1,0 +1,31 @@
+{
+  "name": "soyio-docs-indexer",
+  "version": "1.0.0",
+  "description": "GitHub Action to index documentation for semantic search",
+  "main": "dist/index.js",
+  "scripts": {
+    "lint": "pnpm exec eslint \"src/**/*.{ts,js}\"",
+    "build": "tsc --project tsconfig.json",
+    "watch": "tsc --watch --project tsconfig.json",
+    "start": "node dist/index.js",
+    "test": "vitest run",
+    "test:watch": "vitest watch"
+  },
+  "dependencies": {
+    "@actions/core": "^1.11.1",
+    "@google/genai": "1.30.0",
+    "@pinecone-database/pinecone": "^4.0.0",
+    "dotenv": "^16.4.5",
+    "micromatch": "^4.0.8"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.1",
+    "@types/micromatch": "^4.0.10",
+    "@types/node": "^20.0.0",
+    "eslint": "^9.39.1",
+    "globals": "^16.5.0",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.48.0",
+    "vitest": "^4.0.14"
+  }
+}
