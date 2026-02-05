@@ -26307,7 +26307,7 @@ exports.Impersonated = Impersonated;
 // limitations under the License.
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.JWTAccess = void 0;
-const jws = __nccwpck_require__(8247);
+const jws = __nccwpck_require__(3922);
 const util_1 = __nccwpck_require__(9177);
 const DEFAULT_HEADER = {
     alg: 'RS256',
@@ -31036,12 +31036,12 @@ module.exports = function jwa(algorithm) {
 
 /***/ }),
 
-/***/ 8247:
+/***/ 3922:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 /*global exports*/
-var SignStream = __nccwpck_require__(4967);
-var VerifyStream = __nccwpck_require__(1283);
+var SignStream = __nccwpck_require__(414);
+var VerifyStream = __nccwpck_require__(9470);
 
 var ALGORITHMS = [
   'HS256', 'HS384', 'HS512',
@@ -31065,7 +31065,7 @@ exports.createVerify = function createVerify(opts) {
 
 /***/ }),
 
-/***/ 8928:
+/***/ 8353:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
 /*global module, process*/
@@ -31127,15 +31127,15 @@ module.exports = DataStream;
 
 /***/ }),
 
-/***/ 4967:
+/***/ 414:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
 /*global module*/
 var Buffer = (__nccwpck_require__(5249).Buffer);
-var DataStream = __nccwpck_require__(8928);
+var DataStream = __nccwpck_require__(8353);
 var jwa = __nccwpck_require__(6308);
 var Stream = __nccwpck_require__(2203);
-var toString = __nccwpck_require__(5183);
+var toString = __nccwpck_require__(2176);
 var util = __nccwpck_require__(9023);
 
 function base64url(string, encoding) {
@@ -31166,7 +31166,12 @@ function jwsSign(opts) {
 }
 
 function SignStream(opts) {
-  var secret = opts.secret||opts.privateKey||opts.key;
+  var secret = opts.secret;
+  secret = secret == null ? opts.privateKey : secret;
+  secret = secret == null ? opts.key : secret;
+  if (/^hs/i.test(opts.header.alg) === true && secret == null) {
+    throw new TypeError('secret must be a string or buffer or a KeyObject')
+  }
   var secretStream = new DataStream(secret);
   this.readable = true;
   this.header = opts.header;
@@ -31212,7 +31217,7 @@ module.exports = SignStream;
 
 /***/ }),
 
-/***/ 5183:
+/***/ 2176:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
 /*global module*/
@@ -31229,15 +31234,15 @@ module.exports = function toString(obj) {
 
 /***/ }),
 
-/***/ 1283:
+/***/ 9470:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
 /*global module*/
 var Buffer = (__nccwpck_require__(5249).Buffer);
-var DataStream = __nccwpck_require__(8928);
+var DataStream = __nccwpck_require__(8353);
 var jwa = __nccwpck_require__(6308);
 var Stream = __nccwpck_require__(2203);
-var toString = __nccwpck_require__(5183);
+var toString = __nccwpck_require__(2176);
 var util = __nccwpck_require__(9023);
 var JWS_REGEX = /^[a-zA-Z0-9\-_]+?\.[a-zA-Z0-9\-_]+?\.([a-zA-Z0-9\-_]+)?$/;
 
@@ -31313,7 +31318,12 @@ function jwsDecode(jwsSig, opts) {
 
 function VerifyStream(opts) {
   opts = opts || {};
-  var secretOrKey = opts.secret||opts.publicKey||opts.key;
+  var secretOrKey = opts.secret;
+  secretOrKey = secretOrKey == null ? opts.publicKey : secretOrKey;
+  secretOrKey = secretOrKey == null ? opts.key : secretOrKey;
+  if (/^hs/i.test(opts.algorithm) === true && secretOrKey == null) {
+    throw new TypeError('secret must be a string or buffer or a KeyObject')
+  }
   var secretStream = new DataStream(secretOrKey);
   this.readable = true;
   this.algorithm = opts.algorithm;
@@ -82325,7 +82335,7 @@ Object.defineProperty(exports, "__esModule", ({
 exports.GoogleToken = void 0;
 var fs = _interopRequireWildcard(__nccwpck_require__(9896));
 var _gaxios = __nccwpck_require__(6279);
-var jws = _interopRequireWildcard(__nccwpck_require__(8247));
+var jws = _interopRequireWildcard(__nccwpck_require__(3922));
 var path = _interopRequireWildcard(__nccwpck_require__(6928));
 var _util = __nccwpck_require__(9023);
 function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, "default": e }; if (null === e || "object" != _typeof(e) && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (var _t3 in e) "default" !== _t3 && {}.hasOwnProperty.call(e, _t3) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, _t3)) && (i.get || i.set) ? o(f, _t3, i) : f[_t3] = e[_t3]); return f; })(e, t); }
