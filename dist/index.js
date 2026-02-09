@@ -61928,7 +61928,7 @@ async function generateEmbeddings(apiKey, texts) {
         const promises = batch.map(async (text) => {
             try {
                 const result = await client.models.embedContent({
-                    model: 'models/text-embedding-004',
+                    model: 'models/gemini-embedding-001',
                     contents: [{ parts: [{ text }] }]
                 });
                 if (result.embeddings && result.embeddings[0]) {
@@ -61942,7 +61942,7 @@ async function generateEmbeddings(apiKey, texts) {
                 const error = err;
                 console.error(`Failed to embed chunk: ${error.message}`);
                 // Return zero vector as fallback
-                return new Array(768).fill(0);
+                return new Array(3072).fill(0);
             }
         });
         // Wait for all embeddings in this batch to complete

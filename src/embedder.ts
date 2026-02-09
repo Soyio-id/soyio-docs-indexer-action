@@ -26,7 +26,7 @@ export async function generateEmbeddings(apiKey: string, texts: string[]): Promi
     const promises = batch.map(async (text) => {
       try {
         const result = await client.models.embedContent({
-          model: 'models/text-embedding-004',
+          model: 'models/gemini-embedding-001',
           contents: [{ parts: [{ text }] }]
         });
         if (result.embeddings && result.embeddings[0]) {
@@ -38,7 +38,7 @@ export async function generateEmbeddings(apiKey: string, texts: string[]): Promi
         const error = err as Error;
         console.error(`Failed to embed chunk: ${error.message}`);
         // Return zero vector as fallback
-        return new Array(768).fill(0);
+        return new Array(3072).fill(0);
       }
     });
 

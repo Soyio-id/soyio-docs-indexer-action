@@ -25,7 +25,7 @@ jobs:
       - uses: soyio-id/soyio-docs-indexer-action@v1
         with:
           pinecone_api_key: ${{ secrets.PINECONE_API_KEY }}
-          pinecone_index: 'soyio-docs'
+          pinecone_index: 'soyio-docs-v2'
           gemini_api_key: ${{ secrets.GEMINI_API_KEY }}
           docs_path: '.'
           include_patterns: 'docs/**/*.md,docs/**/*.mdx'
@@ -43,7 +43,7 @@ jobs:
    ```bash
    # .env
    PINECONE_API_KEY=your-key-here
-   PINECONE_INDEX=soyio-docs
+   PINECONE_INDEX=soyio-docs-v2
    GEMINI_API_KEY=your-key-here
    DOCS_PATH=../soyio-docs
    INCLUDE_PATTERNS=docs/**/*.md,docs/**/*.mdx
@@ -97,7 +97,7 @@ Use glob patterns to control which files are indexed:
 2. Filters files using include/exclude glob patterns
 3. Chunks files by headers (~1300 chars per chunk)
 4. Tracks line numbers for each chunk
-5. Generates embeddings using Gemini `text-embedding-004`
+5. Generates embeddings using Gemini `gemini-embedding-001`
 6. Uploads vectors to Pinecone with metadata (file, lines, text preview)
 
 ## Development
