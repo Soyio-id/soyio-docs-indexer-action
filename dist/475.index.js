@@ -520,7 +520,7 @@ function localstorage() {
 	}
 }
 
-module.exports = __webpack_require__(969)(exports);
+module.exports = __webpack_require__(3350)(exports);
 
 const {formatters} = module.exports;
 
@@ -539,7 +539,7 @@ formatters.j = function (v) {
 
 /***/ }),
 
-/***/ 969:
+/***/ 3350:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 
@@ -889,7 +889,7 @@ exports.colors = [6, 2, 3, 4, 5, 1];
 try {
 	// Optional dependency (as in, doesn't need to be installed, NOT like optionalDependencies in package.json)
 	// eslint-disable-next-line import/no-extraneous-dependencies
-	const supportsColor = __webpack_require__(4327);
+	const supportsColor = __webpack_require__(6708);
 
 	if (supportsColor && (supportsColor.stderr || supportsColor).level >= 2) {
 		exports.colors = [
@@ -1097,7 +1097,7 @@ function init(debug) {
 	}
 }
 
-module.exports = __webpack_require__(969)(exports);
+module.exports = __webpack_require__(3350)(exports);
 
 const {formatters} = module.exports;
 
@@ -1605,7 +1605,7 @@ function plural(ms, msAbs, n, name) {
 
 /***/ }),
 
-/***/ 4327:
+/***/ 6708:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 "use strict";
