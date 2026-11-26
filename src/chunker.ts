@@ -25,6 +25,52 @@ export interface WalkOptions {
   excludePatterns?: string[];
 }
 
+interface OpenFence {
+  char: '`' | '~';
+  length: number;
+}
+
+/**
+ * Split comma-separated glob patterns while preserving commas inside `{...}` brace expansions.
+ */
+export function splitGlobPatterns(input: string): string[] {
+  const patterns: string[] = [];
+  let current = '';
+  let braceDepth = 0;
+  let escaped = false;
+
+  for (let i = 0; i < input.length; i++) {
+    const ch = input[i];
+    if (escaped) {
+      current += ch;
+      escaped = false;
+      continue;
+    }
+    if (ch === '\\') {
+      current += ch;
+      escaped = true;
+      continue;
+    }
+    if (ch === '{') {
+      braceDepth++;
+      current += ch;
+    } else if (ch === '}') {
+      if (braceDepth > 0) braceDepth--;
+      current += ch;
+    } else if (ch === ',' && braceDepth === 0) {
+      const trimmed = current.trim();
+      if (trimmed) patterns.push(trimmed);
+      current = '';
+    } else {
+      current += ch;
+    }
+  }
+
+  const trimmed = current.trim();
+  if (trimmed) patterns.push(trimmed);
+  return patterns;
+}
+
 /**
  * Chunk markdown text by headers and size, tracking line numbers
  */
@@ -34,10 +80,28 @@ export function chunkMarkdown(text: string, maxChunkSize: number = 1000): Chunk[
   let currentChunk: string[] = [];
   let currentSize = 0;
   let chunkStartLine = 1;
+  let openFence: OpenFence | null = null;
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
-    const isHeader = /^#{1,6}\s/.test(line);
+    const trimmedLine = line.replace(/\r$/, '');
+
+    if (openFence === null) {
+      const backtickMatch = /^ {0,3}(`{3,})[^`]*$/.exec(trimmedLine);
+      const tildeMatch = backtickMatch ? null : /^ {0,3}(~{3,})/.exec(trimmedLine);
+      if (backtickMatch) {
+        openFence = { char: '`', length: backtickMatch[1].length };
+      } else if (tildeMatch) {
+        openFence = { char: '~', length: tildeMatch[1].length };
+      }
+    } else {
+      const closingPattern = new RegExp(`^ {0,3}${openFence.char}{${openFence.length},}[ \\t]*$`);
+      if (closingPattern.test(trimmedLine)) {
+        openFence = null;
+      }
+    }
+
+    const isHeader = openFence === null && /^#{1,6}\s/.test(trimmedLine);
     const lineLen = line.length + 1;
 
     // Start new chunk on header if we have content
