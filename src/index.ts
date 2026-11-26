@@ -2,7 +2,7 @@ import * as core from '@actions/core';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as dotenv from 'dotenv';
-import { chunkMarkdown, walkDocs, Chunk } from './chunker';
+import { chunkMarkdown, walkDocs, splitGlobPatterns, Chunk } from './chunker';
 import { generateEmbeddings } from './embedder';
 import { uploadToPinecone, clearIndex, PineconeVector } from './pinecone-uploader';
 
@@ -48,8 +48,8 @@ async function run(): Promise<void> {
     const includeInput = getInput('include_patterns') || '**/*.{md,mdx,markdown}';
     const excludeInput = getInput('exclude_patterns') || '';
 
-    const includePatterns = includeInput.split(',').map(p => p.trim()).filter(Boolean);
-    const excludePatterns = excludeInput.split(',').map(p => p.trim()).filter(Boolean);
+    const includePatterns = splitGlobPatterns(includeInput);
+    const excludePatterns = splitGlobPatterns(excludeInput);
 
     console.log('='.repeat(60));
     console.log('Soyio Docs Indexer');

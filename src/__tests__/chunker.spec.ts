@@ -2,7 +2,7 @@ import { describe, it, expect, afterEach } from 'vitest';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
-import { chunkMarkdown, walkDocs } from '../chunker';
+import { chunkMarkdown, walkDocs, splitGlobPatterns } from '../chunker';
 
 const tempDirs: string[] = [];
 
@@ -55,6 +55,83 @@ describe('chunkMarkdown', () => {
     expect(chunks.map(c => c.text)).toEqual(['Line one', 'Line two', 'Line three']);
     expect(chunks.map(c => c.startLine)).toEqual([1, 2, 3]);
     expect(chunks.map(c => c.endLine)).toEqual([1, 2, 3]);
+  });
+
+  it('does not split on # lines inside fenced code blocks', () => {
+    const text = [
+      '# Setup',
+      '```bash',
+      '# install dependencies',
+      'pnpm install',
+      '```',
+      '~~~yaml',
+      '# comment in yaml',
+      'key: value',
+      '~~~',
+      '````markdown',
+      '```bash',
+      '# nested fence comment',
+      '```',
+      '````',
+      '## Next Section',
+      'Done'
+    ].join('\n');
+
+    const chunks = chunkMarkdown(text, 1000);
+
+    expect(chunks).toHaveLength(2);
+    expect(chunks[0]).toEqual({
+      text: [
+        '# Setup',
+        '```bash',
+        '# install dependencies',
+        'pnpm install',
+        '```',
+        '~~~yaml',
+        '# comment in yaml',
+        'key: value',
+        '~~~',
+        '````markdown',
+        '```bash',
+        '# nested fence comment',
+        '```',
+        '````'
+      ].join('\n'),
+      startLine: 1,
+      endLine: 14
+    });
+    expect(chunks[1]).toEqual({
+      text: '## Next Section\nDone',
+      startLine: 15,
+      endLine: 16
+    });
+  });
+});
+
+describe('splitGlobPatterns', () => {
+  it('keeps commas inside brace expansions intact', () => {
+    expect(splitGlobPatterns('**/*.{md,mdx,markdown}')).toEqual(['**/*.{md,mdx,markdown}']);
+    expect(splitGlobPatterns(' docs/**/*.{md,mdx} , guide/*.markdown , ')).toEqual([
+      'docs/**/*.{md,mdx}',
+      'guide/*.markdown'
+    ]);
+    expect(splitGlobPatterns('a/{b,{c,d}}.md,e.md')).toEqual(['a/{b,{c,d}}.md', 'e.md']);
+    expect(splitGlobPatterns('')).toEqual([]);
+  });
+
+  it('matches default include pattern cleanly in walkDocs', () => {
+    const base = createTempDir('walk-docs-braces-');
+    fs.mkdirSync(path.join(base, 'nested'), { recursive: true });
+    fs.writeFileSync(path.join(base, 'a.md'), '# A');
+    fs.writeFileSync(path.join(base, 'nested', 'b.mdx'), '# B');
+    fs.writeFileSync(path.join(base, 'nested', 'c.markdown'), '# C');
+
+    const files = walkDocs(base, {
+      includePatterns: splitGlobPatterns('**/*.{md,mdx,markdown}')
+    });
+    const relative = files.map(f => path.relative(base, f)).sort();
+
+    expect(relative).toEqual(['a.md', path.join('nested', 'b.mdx'), path.join('nested', 'c.markdown')]);
   });
 });
 

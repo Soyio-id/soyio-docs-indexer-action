@@ -67032,6 +67032,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.splitGlobPatterns = splitGlobPatterns;
 exports.chunkMarkdown = chunkMarkdown;
 exports.walkDocs = walkDocs;
 const fs = __importStar(__nccwpck_require__(9896));
@@ -67049,6 +67050,50 @@ const EXCLUDE_DIRS = new Set([
     '.cursor',
 ]);
 /**
+ * Split comma-separated glob patterns while preserving commas inside `{...}` brace expansions.
+ */
+function splitGlobPatterns(input) {
+    const patterns = [];
+    let current = '';
+    let braceDepth = 0;
+    let escaped = false;
+    for (let i = 0; i < input.length; i++) {
+        const ch = input[i];
+        if (escaped) {
+            current += ch;
+            escaped = false;
+            continue;
+        }
+        if (ch === '\\') {
+            current += ch;
+            escaped = true;
+            continue;
+        }
+        if (ch === '{') {
+            braceDepth++;
+            current += ch;
+        }
+        else if (ch === '}') {
+            if (braceDepth > 0)
+                braceDepth--;
+            current += ch;
+        }
+        else if (ch === ',' && braceDepth === 0) {
+            const trimmed = current.trim();
+            if (trimmed)
+                patterns.push(trimmed);
+            current = '';
+        }
+        else {
+            current += ch;
+        }
+    }
+    const trimmed = current.trim();
+    if (trimmed)
+        patterns.push(trimmed);
+    return patterns;
+}
+/**
  * Chunk markdown text by headers and size, tracking line numbers
  */
 function chunkMarkdown(text, maxChunkSize = 1000) {
@@ -67057,9 +67102,27 @@ function chunkMarkdown(text, maxChunkSize = 1000) {
     let currentChunk = [];
     let currentSize = 0;
     let chunkStartLine = 1;
+    let openFence = null;
     for (let i = 0; i < lines.length; i++) {
         const line = lines[i];
-        const isHeader = /^#{1,6}\s/.test(line);
+        const trimmedLine = line.replace(/\r$/, '');
+        if (openFence === null) {
+            const backtickMatch = /^ {0,3}(`{3,})[^`]*$/.exec(trimmedLine);
+            const tildeMatch = backtickMatch ? null : /^ {0,3}(~{3,})/.exec(trimmedLine);
+            if (backtickMatch) {
+                openFence = { char: '`', length: backtickMatch[1].length };
+            }
+            else if (tildeMatch) {
+                openFence = { char: '~', length: tildeMatch[1].length };
+            }
+        }
+        else {
+            const closingPattern = new RegExp(`^ {0,3}${openFence.char}{${openFence.length},}[ \\t]*$`);
+            if (closingPattern.test(trimmedLine)) {
+                openFence = null;
+            }
+        }
+        const isHeader = openFence === null && /^#{1,6}\s/.test(trimmedLine);
         const lineLen = line.length + 1;
         // Start new chunk on header if we have content
         if (isHeader && currentChunk.length > 0) {
@@ -67266,8 +67329,8 @@ async function run() {
         // Parse glob patterns (comma-separated)
         const includeInput = getInput('include_patterns') || '**/*.{md,mdx,markdown}';
         const excludeInput = getInput('exclude_patterns') || '';
-        const includePatterns = includeInput.split(',').map(p => p.trim()).filter(Boolean);
-        const excludePatterns = excludeInput.split(',').map(p => p.trim()).filter(Boolean);
+        const includePatterns = (0, chunker_1.splitGlobPatterns)(includeInput);
+        const excludePatterns = (0, chunker_1.splitGlobPatterns)(excludeInput);
         console.log('='.repeat(60));
         console.log('Soyio Docs Indexer');
         console.log('='.repeat(60));
